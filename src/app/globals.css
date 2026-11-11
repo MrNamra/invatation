@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+:root {
+  --bg-page: #f7f4ee;
+  --bg-sidebar: #f2ede3;
+  --bg-card: #fdfbf7;
+  --bg-raised: #efe9df;
+  --border-hairline: rgba(31, 27, 22, 0.09);
+  --border-strong: rgba(31, 27, 22, 0.18);
+  --text-primary: #1f1b16;
+  --text-secondary: #5e554a;
+  --text-muted: #7b7266;
+  --accent: #a63429;
+  --accent-hover: #8c2a20;
+  --accent-tint: rgba(166, 52, 41, 0.08);
+  --positive: #1d6f42;
+  --positive-tint: rgba(29, 111, 66, 0.09);
+  --negative: #b91c1c;
+  --negative-tint: rgba(185, 28, 28, 0.08);
+}
+
+@layer base {
+  html,
+  body {
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    font-family: var(--font-sans), var(--font-devanagari), -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  * {
+    border-color: var(--border-hairline);
+  }
+}
+
+.font-serif-display {
+  font-family: var(--font-serif), var(--font-devanagari), Georgia, serif;
+}
+
+.font-heritage-serif {
+  font-family: var(--font-cormorant), var(--font-devanagari), Georgia, serif;
+}
+
+.font-calligraphy {
+  font-family: var(--font-script), var(--font-cormorant), Georgia, serif;
+}
+
+.font-mono-tabular {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
