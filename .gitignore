@@ -3,7 +3,6 @@ node_modules
 out
 .env
 .env*.local
-.data
 npm-debug.log*
 .DS_Store
 /imgs/*

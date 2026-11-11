@@ -1,0 +1,228 @@
+{
+  "config": {
+    "id": "default",
+    "host_id": "default",
+    "template_id": "royal-jharokha",
+    "couple": {
+      "bride": "Abhishekkumar",
+      "groom": "Maitri",
+      "hashtag": "#AbhiसेMaitriतक"
+    },
+    "parents": {
+      "bride_parents": "Mrs. Bhumika & Mr. Manish Kumudchandra Mashruwala",
+      "groom_parents": "Mrs. Yashmi & Mr. Bharatkumar Ramchandra Jariwala"
+    },
+    "copy": {
+      "cover_quote": "Marriages are made in heaven, but something that is of more importance, is the showering of your blessings and your presence",
+      "classic_blessing": "With the blessings of our families",
+      "city_label": "Surat",
+      "date_range_label": "Nov – Dec 2026",
+      "groom_parent_prefix": "S/o.",
+      "bride_parent_prefix": "D/o.",
+      "closing_kicker": "With warm regards",
+      "closing_heading": "",
+      "closing_subheading": "Family"
+    },
+    "events": {
+      "spicy_food_dinner": {
+        "id": "dinner",
+        "key": "spicy_food_dinner",
+        "title": "Spicy Food / Dinner Ceremony",
+        "shortLabel": "Dinner",
+        "date": "Wednesday 25th November 2026",
+        "isoStart": "2026-11-25T20:00:00+05:30",
+        "isoEnd": "2026-11-25T23:00:00+05:30",
+        "time": "8:00 P.M. onwards",
+        "venue": "Mango Farm, Opp Mahavir Soc. Banglow No. 4, Near Kiran Hospital, Katargam, Surat",
+        "host": "Jariwala Family",
+        "attire": "Festive Indian evening wear",
+        "subtitle": "Join us for an evening feast of traditional flavours, warmth, and togetherness"
+      },
+      "sangeet": {
+        "id": "sangeet",
+        "key": "sangeet",
+        "title": "Mosariya Sangeet",
+        "shortLabel": "Sangeet",
+        "date": "29th November 2026",
+        "isoStart": "2026-11-29T19:30:00+05:30",
+        "isoEnd": "2026-11-29T23:30:00+05:30",
+        "time": "7:30 P.M. Onwards",
+        "venue": "\"D.B. Patel Sport Ground\", Bhimrad-Althan Rd, Nr Shrungle hills, Surat.",
+        "attire": "Indo-western or celebratory evening attire",
+        "mapUrl": "https://maps.app.goo.gl/QxsA8opueYYg4tbB9",
+        "tagline": "The moment is right, the feeling is bright, the mood is light, let's party all night, lets dance, jive and dine."
+      },
+      "grah_shanti": {
+        "id": "grah_shanti",
+        "key": "grah_shanti",
+        "title": "Grah Shanti",
+        "shortLabel": "Grah Shanti",
+        "date": "Monday 14th December 2026",
+        "isoStart": "2026-12-14T10:00:00+05:30",
+        "isoEnd": "2026-12-14T13:00:00+05:30",
+        "time": "10:00 A.M.",
+        "venue": "\"Garden - Singapuri ni Wadi\", Rustampura, Salabatpura, Surat.",
+        "attire": "Morning traditional attire in yellow, ivory, or pastel tones",
+        "mapUrl": "https://maps.app.goo.gl/STLSuUQQs8KRSAsP8",
+        "subtitle": "Seeking sacred blessings for harmony, grace, and an auspicious beginning"
+      },
+      "baraat": {
+        "id": "baraat",
+        "key": "baraat",
+        "title": "Baraat",
+        "shortLabel": "Baraat",
+        "date": "14th December 2026",
+        "isoStart": "2026-12-14T19:00:00+05:30",
+        "isoEnd": "2026-12-14T20:00:00+05:30",
+        "time": "7:00 P.M. Onwards",
+        "venue": "3/2054, Vachli Sheri, Salabatpura, Surat.",
+        "attire": "Traditional festive attire and comfortable footwear",
+        "mapUrl": "https://maps.app.goo.gl/NgihVsL16VTZXi517",
+        "subtitle": "Request the pleasure of your company to grace the auspicious Wedding Ceremony"
+      },
+      "wedding": {
+        "id": "wedding",
+        "key": "wedding",
+        "title": "Wedding Ceremony",
+        "shortLabel": "Wedding",
+        "date": "Monday 14th December 2026",
+        "isoStart": "2026-12-14T20:00:00+05:30",
+        "isoEnd": "2026-12-14T23:30:00+05:30",
+        "time": "8:00 P.M.",
+        "venue": "\"Garden - Singapuri ni Wadi\", Rustampura, Salabatpura, Surat.",
+        "attire": "Traditional Indian wedding attire",
+        "mapUrl": "https://maps.app.goo.gl/STLSuUQQs8KRSAsP8",
+        "subtitle": "With the sacred pheras and blessings of Shrinathji, as two families unite as one"
+      },
+      "reception_jariwala": {
+        "id": "reception_jariwala",
+        "key": "reception_jariwala",
+        "title": "Wedding Reception",
+        "shortLabel": "Reception",
+        "date": "16th December 2026",
+        "isoStart": "2026-12-16T20:00:00+05:30",
+        "isoEnd": "2026-12-16T23:30:00+05:30",
+        "time": "8:00 P.M. Onwards",
+        "venue": "\"Divyanish Farm\", Beside Scholar English Academy, Surat.",
+        "attire": "Formal evening ethnic or tailored reception wear",
+        "mapUrl": "https://maps.app.goo.gl/DpFWN2kXKpnDRq8e7",
+        "subtitle": "Cordially invite you & solicit the pleasure of your company at the Wedding Reception followed by Dinner"
+      }
+    },
+    "whatsapp_message_template": "Dear {{guest_name}}, with the blessings of our families, you are warmly invited to celebrate the wedding of {{bride}} and {{groom}} ({{hashtag}}). Please open your personal invitation here: {{link}}",
+    "updated_at": "2026-11-11T12:47:42.473Z"
+  },
+  "guests": [
+    {
+      "id": "a1b2c3d4-0001-4000-8000-000000000001",
+      "host_id": "default",
+      "unique_code": "JARI7M2K",
+      "guest_name": "Karan & Meera Desai",
+      "phone_number": "919825104218",
+      "allowed_events": [
+        "dinner",
+        "sangeet",
+        "grah_shanti",
+        "baraat",
+        "wedding",
+        "reception_jariwala"
+      ],
+      "viewed_status": true,
+      "viewed_at": "2026-11-10T14:22:00.000Z",
+      "whatsapp_sent_status": true,
+      "whatsapp_sent_at": "2026-11-10T11:05:00.000Z",
+      "rsvp_status": "attending",
+      "rsvp_events": [
+        "dinner",
+        "sangeet",
+        "grah_shanti",
+        "wedding",
+        "reception_jariwala"
+      ],
+      "rsvp_guests_count": 2,
+      "rsvp_note": "Warmest congratulations to both families.",
+      "created_at": "2026-11-10T09:00:00.000Z"
+    },
+    {
+      "id": "a1b2c3d4-0002-4000-8000-000000000002",
+      "host_id": "default",
+      "unique_code": "MASH4P8R",
+      "guest_name": "Dr. Nirav & Kavita Patel",
+      "phone_number": "919879231405",
+      "allowed_events": [
+        "sangeet",
+        "baraat",
+        "wedding",
+        "reception_jariwala"
+      ],
+      "viewed_status": true,
+      "viewed_at": "2026-11-11T08:40:00.000Z",
+      "whatsapp_sent_status": true,
+      "whatsapp_sent_at": "2026-11-10T16:30:00.000Z",
+      "rsvp_status": "pending",
+      "rsvp_events": [],
+      "rsvp_guests_count": 2,
+      "rsvp_note": null,
+      "created_at": "2026-11-10T09:05:00.000Z"
+    },
+    {
+      "id": "a1b2c3d4-0003-4000-8000-000000000003",
+      "host_id": "default",
+      "unique_code": "SURT9W3N",
+      "guest_name": "Rohan & Ananya Parekh",
+      "phone_number": "919724618820",
+      "allowed_events": [
+        "sangeet",
+        "baraat",
+        "wedding"
+      ],
+      "viewed_status": false,
+      "viewed_at": null,
+      "whatsapp_sent_status": false,
+      "whatsapp_sent_at": null,
+      "rsvp_status": "pending",
+      "rsvp_events": [],
+      "rsvp_guests_count": 2,
+      "rsvp_note": null,
+      "created_at": "2026-11-10T09:10:00.000Z"
+    },
+    {
+      "id": "a1b2c3d4-0004-4000-8000-000000000004",
+      "host_id": "default",
+      "unique_code": "VESU6T5H",
+      "guest_name": "Pranav Mehta & Family",
+      "phone_number": "919825447190",
+      "allowed_events": [
+        "reception_jariwala"
+      ],
+      "viewed_status": true,
+      "viewed_at": "2026-11-11T12:32:45.471Z",
+      "whatsapp_sent_status": false,
+      "whatsapp_sent_at": null,
+      "rsvp_status": "pending",
+      "rsvp_events": [],
+      "rsvp_guests_count": 3,
+      "rsvp_note": null,
+      "created_at": "2026-11-10T09:15:00.000Z"
+    }
+  ],
+  "users": [
+    {
+      "id": "27acbcbd-d86d-40fe-840a-f1cd28d694ad",
+      "email": "admin@patrika.local",
+      "password_hash": "scrypt$85dba4b1787912e46a328feba13512cf$e24eae2600e87718aa726e676835e242eeace35b7f112d73f4064aebd9909149f6a5e3944073bb5f400685e58302ea89bf0868b896586f57d150d3a1e8c1d6ef",
+      "display_name": "Host Admin",
+      "role": "host",
+      "is_active": true,
+      "env_sync_tag": "801906124f697d310de2e8fe973ef90c702cd980a275282dbebb62ecc35dc3e1",
+      "created_at": "2026-11-11T13:03:14.828Z",
+      "updated_at": "2026-11-11T13:03:14.828Z"
+    }
+  ],
+  "auth_settings": {
+    "id": "default",
+    "registration_enabled": false,
+    "max_users": 1,
+    "updated_at": "2026-11-11T12:00:00.000Z"
+  }
+}
