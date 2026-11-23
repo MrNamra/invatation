@@ -834,17 +834,6 @@ export function GuestInvitationViewer({
             {payload.parents.bride_parents})
           </p>
         </div>
-
-        <div className="absolute inset-x-[16px] bottom-[16px] z-10 rounded-2xl bg-[#fdfbf7]/95 border border-[#1f1b16]/12 px-[16px] py-[12px] text-left shadow-sm">
-          <p className="text-[#756c60] text-[11px]">Personal invitation for</p>
-          <p className="font-heritage-serif text-[17px] font-medium text-[#1f1b16]">
-            {payload.guest.guest_name}
-          </p>
-          <p className="text-[#5e554a] text-[11px] tabular-nums mt-[2px]">
-            {ceremonyCountLabel} · Folio{" "}
-            <span className="font-mono-tabular">{payload.guest.unique_code}</span>
-          </p>
-        </div>
       </div>
 
       {/* Pages 2..N: Ceremonies */}
@@ -876,30 +865,6 @@ export function GuestInvitationViewer({
               className="absolute inset-0 pointer-events-none"
               style={{ background: scene.scrimGradient }}
             />
-
-            {/* Badges */}
-            <div className="absolute inset-x-[16px] top-[16px] z-10 flex items-center justify-between">
-              <span
-                className="font-mono-tabular rounded-md border text-[11px] px-2 py-0.5"
-                style={{
-                  color: scene.isNightSky ? "#e6edf7" : "#4a3310",
-                  borderColor: scene.isNightSky ? "rgba(253,251,247,0.22)" : "rgba(31,27,22,0.16)",
-                  backgroundColor: scene.isNightSky ? "rgba(8,25,56,0.58)" : "rgba(253,251,247,0.78)",
-                }}
-              >
-                {String(idx + 1).padStart(2, "0")} / {String(eventCount).padStart(2, "0")}
-              </span>
-              <span
-                className="font-mono-tabular rounded-md border text-[11px] px-2 py-0.5"
-                style={{
-                  color: scene.isNightSky ? "#e6edf7" : "#4a3310",
-                  borderColor: scene.isNightSky ? "rgba(253,251,247,0.22)" : "rgba(31,27,22,0.16)",
-                  backgroundColor: scene.isNightSky ? "rgba(8,25,56,0.58)" : "rgba(253,251,247,0.78)",
-                }}
-              >
-                {getCountdownLabel(ev.isoStart)}
-              </span>
-            </div>
 
             <div className="relative z-10 h-full flex flex-col justify-between text-center px-6 py-6">
               <div className="flex flex-col items-center">
@@ -1323,7 +1288,7 @@ export function GuestInvitationViewer({
                       </div>
 
                       {/* Personal guest pass bar anchored cleanly along bottom floor */}
-                      <div className="absolute inset-x-[2.8cqw] bottom-[2.6cqw] z-10">
+                      <div className={`absolute inset-x-[2.8cqw] bottom-[2.6cqw] z-10 ${EXPORT_HIDE_IMAGE} ${EXPORT_HIDE_PDF}`}>
                         <div className="w-full rounded-[2.8cqw] bg-[#fdfbf7]/95 backdrop-blur-sm border border-[#1f1b16]/12 px-[3cqw] py-[2cqw] flex items-center justify-between gap-[2cqw] text-left shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
                           <div className="min-w-0">
                             <p
@@ -1512,7 +1477,7 @@ export function GuestInvitationViewer({
                               </div>
 
                               {/* Compact ceremony jump dock at bottom floor leaving ceremonial elephants uncovered */}
-                              <div className="absolute inset-x-[2.8cqw] bottom-[2.6cqw] z-10 rounded-[2.6cqw] bg-[#fdfbf7]/95 backdrop-blur-sm border border-[#1f1b16]/12 px-[2.8cqw] py-[2cqw] text-left shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
+                              <div className={`absolute inset-x-[2.8cqw] bottom-[2.6cqw] z-10 rounded-[2.6cqw] bg-[#fdfbf7]/95 backdrop-blur-sm border border-[#1f1b16]/12 px-[2.8cqw] py-[2cqw] text-left shadow-[0_2px_10px_rgba(0,0,0,0.06)] ${EXPORT_HIDE_IMAGE} ${EXPORT_HIDE_PDF}`}>
                                 <div className="flex items-center justify-between gap-2 mb-[1.2cqw]">
                                   <span
                                     className="font-medium text-[#1f1b16] shrink-0"
@@ -1606,47 +1571,6 @@ export function GuestInvitationViewer({
                                     className="absolute inset-0 pointer-events-none"
                                     style={{ background: scene.scrimGradient }}
                                   />
-
-                                  {/* Corner index & countdown badges kept outside center flow to preserve upper sky */}
-                                  <div className="absolute inset-x-[2.8cqw] top-[2.6cqw] z-10 flex items-center justify-between pointer-events-none">
-                                    <span
-                                      className="font-mono-tabular rounded-md border"
-                                      style={{
-                                        fontSize: "clamp(8px, 2.5cqw, 11px)",
-                                        padding: "0.4cqw 1.8cqw",
-                                        color: scene.isNightSky
-                                          ? "#e6edf7"
-                                          : "#4a3310",
-                                        borderColor: scene.isNightSky
-                                          ? "rgba(253,251,247,0.22)"
-                                          : "rgba(31,27,22,0.16)",
-                                        backgroundColor: scene.isNightSky
-                                          ? "rgba(8,25,56,0.58)"
-                                          : "rgba(253,251,247,0.78)",
-                                      }}
-                                    >
-                                      {String(chapterIndex).padStart(2, "0")}{" "}
-                                      / {String(eventCount).padStart(2, "0")}
-                                    </span>
-                                    <span
-                                      className="font-mono-tabular rounded-md border"
-                                      style={{
-                                        fontSize: "clamp(8px, 2.5cqw, 11px)",
-                                        padding: "0.4cqw 1.8cqw",
-                                        color: scene.isNightSky
-                                          ? "#e6edf7"
-                                          : "#4a3310",
-                                        borderColor: scene.isNightSky
-                                          ? "rgba(253,251,247,0.22)"
-                                          : "rgba(31,27,22,0.16)",
-                                        backgroundColor: scene.isNightSky
-                                          ? "rgba(8,25,56,0.58)"
-                                          : "rgba(253,251,247,0.78)",
-                                      }}
-                                    >
-                                      {getCountdownLabel(ev.isoStart)}
-                                    </span>
-                                  </div>
 
                                   <div
                                     className="relative z-10 h-full flex flex-col justify-between text-center"
@@ -2289,7 +2213,7 @@ export function GuestInvitationViewer({
                   />
 
                   <div
-                    className="w-full rounded-xl px-5 py-4 my-4 border"
+                    className={`w-full rounded-xl px-5 py-4 my-4 border ${EXPORT_HIDE_IMAGE} ${EXPORT_HIDE_PDF}`}
                     style={{
                       backgroundColor: theme.bgRaised,
                       borderColor: theme.hairline,
@@ -2518,25 +2442,6 @@ export function GuestInvitationViewer({
                         ) : currentChapter.kind === "event" ? (
                           <div className="flex flex-col justify-between gap-6 flex-1">
                             <div>
-                              <div className="flex items-center justify-between gap-3 mb-6">
-                                <span
-                                  className="text-[12px] font-mono-tabular"
-                                  style={{ color: theme.accent }}
-                                >
-                                  Ceremony {String(chapterIndex).padStart(2, "0")}{" "}
-                                  of {String(eventCount).padStart(2, "0")}
-                                </span>
-                                <span
-                                  className="text-[12px] font-mono-tabular px-2.5 py-1 rounded-md border"
-                                  style={{
-                                    backgroundColor: theme.bgRaised,
-                                    borderColor: theme.hairline,
-                                    color: theme.textSecondary,
-                                  }}
-                                >
-                                  {getCountdownLabel(currentChapter.event.isoStart)}
-                                </span>
-                              </div>
 
                               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-6">
                                 <div>

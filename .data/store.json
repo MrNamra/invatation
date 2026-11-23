@@ -209,14 +209,14 @@
   "users": [
     {
       "id": "27acbcbd-d86d-40fe-840a-f1cd28d694ad",
-      "email": "admin@patrika.local",
-      "password_hash": "scrypt$85dba4b1787912e46a328feba13512cf$e24eae2600e87718aa726e676835e242eeace35b7f112d73f4064aebd9909149f6a5e3944073bb5f400685e58302ea89bf0868b896586f57d150d3a1e8c1d6ef",
+      "email": "admin@admin.com",
+      "password_hash": "scrypt$53241fd5387cf0c3942bd88c38a34a89$d401e5252f670c809683cb35bf1dc7ecda8341e73f44f9eff7d92f8a3beb60a357166faa37f12ae5327e982dc4dd30bb4d2b4e93a5309e12eccf4092002af37a",
       "display_name": "Host Admin",
       "role": "host",
       "is_active": true,
-      "env_sync_tag": "801906124f697d310de2e8fe973ef90c702cd980a275282dbebb62ecc35dc3e1",
+      "env_sync_tag": "5f510aaeb406f5d1ce7c1bda8657d584a483f45a657b67a48de73db2fabc3575",
       "created_at": "2026-11-11T13:03:14.828Z",
-      "updated_at": "2026-11-11T13:03:14.828Z"
+      "updated_at": "2026-11-23T18:00:07.836Z"
     }
   ],
   "auth_settings": {
