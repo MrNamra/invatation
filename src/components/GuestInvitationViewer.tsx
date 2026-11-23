@@ -1349,7 +1349,7 @@ export function GuestInvitationViewer({
                             </p>
                           </div>
 
-                          <div className="flex items-center gap-[1cqw] shrink-0">
+                          <div className="flex items-center gap-[1.2cqw] shrink-0">
                             <button
                               type="button"
                               onClick={handleDownloadCurrentImage}
@@ -1380,7 +1380,7 @@ export function GuestInvitationViewer({
                                   goToChapter(0);
                                 }
                               }}
-                              className={`rounded-lg bg-[#b92854] hover:bg-[#9c2046] text-[#fdfbf7] font-medium inline-flex items-center gap-[1.2cqw] shrink-0 whitespace-nowrap transition-[transform,background-color] duration-150 active:scale-[0.98] cursor-pointer ${EXPORT_HIDE_IMAGE} ${EXPORT_HIDE_PDF}`}
+                              className="rounded-lg bg-[#b92854] hover:bg-[#9c2046] text-[#fdfbf7] font-medium inline-flex items-center gap-[1.2cqw] shrink-0 whitespace-nowrap transition-[transform,background-color] duration-150 active:scale-[0.98] cursor-pointer"
                               style={{
                                 height: "clamp(28px, 8.5cqw, 38px)",
                                 paddingInline: "clamp(10px, 3.2cqw, 14px)",
@@ -2638,7 +2638,7 @@ export function GuestInvitationViewer({
                                     payload.couple
                                   )
                                 }
-                                className={`h-9 px-4 rounded-lg inline-flex items-center gap-2 text-[13px] font-medium border transition-[transform,color,background-color,border-color] duration-150 active:scale-[0.98] cursor-pointer ${EXPORT_HIDE_IMAGE} ${EXPORT_HIDE_PDF}`}
+                                className="h-9 px-4 rounded-lg inline-flex items-center gap-2 text-[13px] font-medium border transition-[transform,color,background-color,border-color] duration-150 active:scale-[0.98] cursor-pointer"
                                 style={{
                                   backgroundColor: theme.bgRaised,
                                   borderColor: theme.hairline,
