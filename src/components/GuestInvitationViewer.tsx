@@ -9,7 +9,10 @@ import {
   CalendarPlus,
   Check,
   Clock,
+  Download,
   ExternalLink,
+  FileDown,
+  Loader2,
   MapPin,
   Tag,
   Users,
@@ -18,6 +21,15 @@ import {
 import { AmCrest, type CrestTone } from "@/components/AmCrest";
 import { CeremonyIllustration } from "@/components/CeremonyIllustration";
 import { generateEventIcs } from "@/lib/ics";
+import {
+  downloadElementAsImage,
+  generateMultiPagePdf,
+  sanitizeFilename,
+  EXPORT_HIDE_IMAGE,
+  EXPORT_HIDE_PDF,
+  EXPORT_LOCATION_LINK,
+  type PdfCardExportItem,
+} from "@/lib/export-invitation";
 import type {
   EventId,
   GuestInvitationPayload,
@@ -446,6 +458,71 @@ export function GuestInvitationViewer({
     [payload.parents.bride_parents, payload.parents.groom_parents]
   );
 
+  const [exportingImage, setExportingImage] = useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
+  const [pdfProgress, setPdfProgress] = useState<{
+    current: number;
+    total: number;
+  } | null>(null);
+  const [exportNotice, setExportNotice] = useState<string | null>(null);
+
+  const currentCardRef = useRef<HTMLDivElement | null>(null);
+  const pdfExportDeckRef = useRef<HTMLDivElement | null>(null);
+
+  const handleDownloadCurrentImage = async () => {
+    if (!currentCardRef.current || exportingImage) return;
+    setExportingImage(true);
+    setExportNotice(null);
+    try {
+      let nameSuffix = "Cover";
+      if (isOpened) {
+        if (currentChapter.kind === "event") {
+          nameSuffix = sanitizeFilename(
+            currentChapter.event.shortLabel || currentChapter.event.title
+          );
+        } else if (currentChapter.kind === "rsvp") {
+          nameSuffix = "Warm-Regards";
+        }
+      }
+      const filename = `${sanitizeFilename(payload.couple.groom)}-${sanitizeFilename(payload.couple.bride)}-${nameSuffix}.png`;
+      await downloadElementAsImage(currentCardRef.current, filename);
+    } catch (err) {
+      console.error("Failed to download card image:", err);
+      setExportNotice("Could not download image. Please try again.");
+    } finally {
+      setExportingImage(false);
+    }
+  };
+
+  const handleExportPdf = async () => {
+    if (!pdfExportDeckRef.current || exportingPdf) return;
+    setExportingPdf(true);
+    setExportNotice(null);
+    try {
+      const cardElements = Array.from(
+        pdfExportDeckRef.current.querySelectorAll<HTMLElement>("[data-pdf-card]")
+      );
+      const items: PdfCardExportItem[] = cardElements.map((el) => ({
+        element: el,
+        mapUrl: el.getAttribute("data-map-url"),
+      }));
+
+      setPdfProgress({ current: 0, total: items.length });
+      const guestSlug = sanitizeFilename(payload.guest.guest_name);
+      const filename = `${sanitizeFilename(payload.couple.groom)}-${sanitizeFilename(payload.couple.bride)}-Wedding-Invitation-${guestSlug}.pdf`;
+
+      await generateMultiPagePdf(items, filename, (current, total) => {
+        setPdfProgress({ current, total });
+      });
+    } catch (err) {
+      console.error("Failed to export PDF:", err);
+      setExportNotice("Could not export PDF. Please try again.");
+    } finally {
+      setExportingPdf(false);
+      setPdfProgress(null);
+    }
+  };
+
   // Reusable RSVP form panel (shared across stationery and heritage drawer modes)
   const renderRsvpForm = (compact?: boolean) => (
     <form
@@ -689,6 +766,321 @@ export function GuestInvitationViewer({
     </form>
   );
 
+  const renderPdfExportDeck = () => (
+    <div
+      ref={pdfExportDeckRef}
+      aria-hidden="true"
+      style={{
+        position: "fixed",
+        left: "-99999px",
+        top: 0,
+        width: "540px",
+        pointerEvents: "none",
+        opacity: 0,
+        zIndex: -100,
+      }}
+    >
+      {/* Page 1: Cover */}
+      <div
+        data-pdf-card="cover"
+        className="relative rounded-2xl overflow-hidden bg-[#e8eef5]"
+        style={{
+          width: "540px",
+          height: "960px",
+          position: "relative",
+          containerType: "inline-size",
+        }}
+      >
+        <img
+          src="/cards/cover-elephants.jpg"
+          alt="Cover"
+          className="absolute inset-0 w-full h-full object-cover select-none"
+          crossOrigin="anonymous"
+        />
+        <div
+          className="absolute inset-x-0 top-0 h-[58%] pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(246, 250, 255, 0.56) 0%, rgba(246, 250, 255, 0.34) 55%, rgba(246, 250, 255, 0) 100%)",
+          }}
+        />
+        <p className="relative z-10 leading-[1.26] font-medium text-[#a31d47] text-center px-[16px] pt-[12px] max-w-[490px] mx-auto text-[11px]">
+          {payload.copy.cover_quote}
+        </p>
+
+        <div className="absolute inset-x-0 top-[20%] z-10 flex flex-col items-center text-center px-[75px]">
+          <AmCrest
+            groom={payload.couple.groom}
+            bride={payload.couple.bride}
+            hashtag={payload.couple.hashtag}
+            tone="rose"
+            className="mb-[4px] shrink-0 w-[75px] h-[75px]"
+          />
+          <p className="text-[#354624] font-medium leading-[1.2] mb-[3px] text-[11px] max-w-[290px]">
+            ({payload.copy.groom_parent_prefix ? `${payload.copy.groom_parent_prefix} ` : ""}
+            {payload.parents.groom_parents})
+          </p>
+          <h2 className="font-calligraphy leading-[1.04] font-normal text-[#b92252] text-[34px]">
+            {payload.couple.groom}
+          </h2>
+          <p className="font-heritage-serif font-medium tracking-[0.04em] text-[#5e6b34] text-[13px]">
+            Weds
+          </p>
+          <h2 className="font-calligraphy leading-[1.04] font-normal text-[#b92252] text-[34px]">
+            {payload.couple.bride}
+          </h2>
+          <p className="text-[#354624] font-medium leading-[1.2] mt-[3px] text-[11px] max-w-[290px]">
+            ({payload.copy.bride_parent_prefix ? `${payload.copy.bride_parent_prefix} ` : ""}
+            {payload.parents.bride_parents})
+          </p>
+        </div>
+
+        <div className="absolute inset-x-[16px] bottom-[16px] z-10 rounded-2xl bg-[#fdfbf7]/95 border border-[#1f1b16]/12 px-[16px] py-[12px] text-left shadow-sm">
+          <p className="text-[#756c60] text-[11px]">Personal invitation for</p>
+          <p className="font-heritage-serif text-[17px] font-medium text-[#1f1b16]">
+            {payload.guest.guest_name}
+          </p>
+          <p className="text-[#5e554a] text-[11px] tabular-nums mt-[2px]">
+            {ceremonyCountLabel} · Folio{" "}
+            <span className="font-mono-tabular">{payload.guest.unique_code}</span>
+          </p>
+        </div>
+      </div>
+
+      {/* Pages 2..N: Ceremonies */}
+      {payload.permitted_events.map((ev, idx) => {
+        const scene = HERITAGE_EVENT_SCENES[ev.id] ?? HERITAGE_EVENT_SCENES.wedding;
+        const mapHref = getEventMapHref(ev);
+        const isDinnerCard = ev.id === "dinner";
+
+        return (
+          <div
+            key={`export-pdf-${ev.id}`}
+            data-pdf-card={ev.id}
+            data-map-url={mapHref}
+            className="relative rounded-2xl overflow-hidden bg-[#e8eef5]"
+            style={{
+              width: "540px",
+              height: "960px",
+              position: "relative",
+              containerType: "inline-size",
+            }}
+          >
+            <img
+              src={scene.imageSrc}
+              alt={ev.title}
+              className="absolute inset-0 w-full h-full object-cover select-none"
+              crossOrigin="anonymous"
+            />
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: scene.scrimGradient }}
+            />
+
+            {/* Badges */}
+            <div className="absolute inset-x-[16px] top-[16px] z-10 flex items-center justify-between">
+              <span
+                className="font-mono-tabular rounded-md border text-[11px] px-2 py-0.5"
+                style={{
+                  color: scene.isNightSky ? "#e6edf7" : "#4a3310",
+                  borderColor: scene.isNightSky ? "rgba(253,251,247,0.22)" : "rgba(31,27,22,0.16)",
+                  backgroundColor: scene.isNightSky ? "rgba(8,25,56,0.58)" : "rgba(253,251,247,0.78)",
+                }}
+              >
+                {String(idx + 1).padStart(2, "0")} / {String(eventCount).padStart(2, "0")}
+              </span>
+              <span
+                className="font-mono-tabular rounded-md border text-[11px] px-2 py-0.5"
+                style={{
+                  color: scene.isNightSky ? "#e6edf7" : "#4a3310",
+                  borderColor: scene.isNightSky ? "rgba(253,251,247,0.22)" : "rgba(31,27,22,0.16)",
+                  backgroundColor: scene.isNightSky ? "rgba(8,25,56,0.58)" : "rgba(253,251,247,0.78)",
+                }}
+              >
+                {getCountdownLabel(ev.isoStart)}
+              </span>
+            </div>
+
+            <div className="relative z-10 h-full flex flex-col justify-between text-center px-6 py-6">
+              <div className="flex flex-col items-center">
+                <AmCrest
+                  groom={payload.couple.groom}
+                  bride={payload.couple.bride}
+                  hashtag={payload.couple.hashtag}
+                  tone={scene.crestTone}
+                  className="shrink-0 w-[72px] h-[72px]"
+                />
+
+                {ev.tagline ? (
+                  <p
+                    className="leading-[1.24] max-w-[380px] text-[11.5px] mt-2 mb-1"
+                    style={{ color: scene.subtitleColor }}
+                  >
+                    {ev.tagline}
+                  </p>
+                ) : null}
+
+                {ev.host?.trim() ? (
+                  <p
+                    className="font-heritage-serif tracking-[0.04em] font-medium text-[12.5px] mt-1"
+                    style={{ color: scene.subtitleColor }}
+                  >
+                    {ev.id === "sangeet" ? ev.host.trim() : `Hosted by ${ev.host.trim()}`}
+                  </p>
+                ) : null}
+
+                <h2
+                  className={
+                    scene.titleKind === "script"
+                      ? "font-calligraphy leading-[1.04] font-normal"
+                      : "font-heritage-serif leading-[1.06] font-medium tracking-[0.03em]"
+                  }
+                  style={{
+                    color: scene.titleColor,
+                    fontSize: scene.titleKind === "script"
+                      ? isDinnerCard ? "32px" : "42px"
+                      : "33px",
+                    marginTop: "4px",
+                  }}
+                >
+                  {ev.id === "sangeet" && ev.title.trim() === "Mosariya Sangeet" && !ev.host?.trim()
+                    ? "Sangeet"
+                    : ev.id === "reception_jariwala" && ev.title.trim() === "Wedding Reception"
+                    ? "Reception"
+                    : ev.title}
+                </h2>
+
+                {ev.subtitle ? (
+                  <p
+                    className="leading-[1.24] max-w-[400px] text-[11.5px] mt-2"
+                    style={{ color: scene.subtitleColor }}
+                  >
+                    {ev.subtitle}
+                  </p>
+                ) : null}
+
+                <div
+                  className="border-b border-dashed my-3"
+                  style={{ borderColor: scene.dividerColor, width: "170px" }}
+                />
+
+                <p
+                  className="font-heritage-serif leading-tight font-medium tabular-nums text-[20px]"
+                  style={{ color: scene.dateColor }}
+                >
+                  {ev.date}
+                </p>
+                <p
+                  className="font-heritage-serif font-medium tabular-nums text-[14px] mt-1"
+                  style={{ color: scene.metaColor }}
+                >
+                  {ev.time}
+                </p>
+
+                <div className="max-w-[400px] mt-3">
+                  <p
+                    className="font-heritage-serif font-medium tracking-[0.02em] text-[13.5px]"
+                    style={{ color: scene.dateColor }}
+                  >
+                    Venue
+                  </p>
+                  <p
+                    className="leading-[1.24] font-medium text-[12.5px] mt-1"
+                    style={{ color: scene.metaColor }}
+                  >
+                    {ev.venue}
+                  </p>
+                </div>
+
+                {/* Click for location link in PDF (Active & Clickable!) */}
+                <div className="flex items-center justify-center gap-2 mt-4">
+                  <a
+                    href={mapHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`rounded-lg inline-flex items-center font-medium border whitespace-nowrap px-3 py-1.5 text-[12px] gap-1.5 ${EXPORT_LOCATION_LINK}`}
+                    style={{
+                      backgroundColor: scene.isNightSky
+                        ? "rgba(253, 251, 247, 0.16)"
+                        : "rgba(253, 251, 247, 0.90)",
+                      borderColor: scene.isNightSky
+                        ? "rgba(253, 251, 247, 0.30)"
+                        : "rgba(31, 27, 22, 0.18)",
+                      color: scene.isNightSky ? "#fdfbf7" : "#1f1b16",
+                    }}
+                  >
+                    <MapPin className="w-3.5 h-3.5" strokeWidth={1.5} />
+                    Click for location
+                    <ExternalLink className="w-3 h-3 opacity-80" strokeWidth={1.5} />
+                  </a>
+                </div>
+              </div>
+
+              {ev.attire ? (
+                <div className="flex justify-center">
+                  <span className="inline-flex items-center rounded-lg bg-[#161411]/72 text-[#fdfbf7] text-[11.5px] px-3 py-1">
+                    {ev.attire}
+                  </span>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        );
+      })}
+
+      {/* Final Page: Closing Regards */}
+      <div
+        data-pdf-card="closing"
+        className="relative rounded-2xl overflow-hidden bg-[#e8eef5]"
+        style={{
+          width: "540px",
+          height: "960px",
+          position: "relative",
+          containerType: "inline-size",
+        }}
+      >
+        <img
+          src="/cards/closing-elephants.jpg"
+          alt="Closing"
+          className="absolute inset-0 w-full h-full object-cover select-none"
+          crossOrigin="anonymous"
+        />
+        <div
+          className="absolute inset-x-0 top-0 h-[50%] pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(246, 250, 255, 0.62) 0%, rgba(246, 250, 255, 0.35) 60%, rgba(246, 250, 255, 0) 100%)",
+          }}
+        />
+
+        <div className="relative z-10 h-full flex flex-col items-center justify-start text-center px-8 py-10">
+          <div className="flex flex-col items-center mt-6">
+            <AmCrest
+              groom={payload.couple.groom}
+              bride={payload.couple.bride}
+              hashtag={payload.couple.hashtag}
+              tone="rose"
+              className="shrink-0 w-[84px] h-[84px] mb-3"
+            />
+
+            <div className="flex items-center gap-2 text-[#5e6b34] font-medium text-[12px]">
+              <span className="w-6 h-px bg-[#5e6b34]/50" />
+              <span>{payload.copy.closing_kicker}</span>
+              <span className="w-6 h-px bg-[#5e6b34]/50" />
+            </div>
+
+            <h2 className="font-heritage-serif leading-tight font-normal text-[#b92252] text-[34px] mt-2">
+              {payload.copy.closing_heading.trim() || closingFamily.heading}
+            </h2>
+            <p className="font-heritage-serif tracking-[0.06em] text-[#5e6b34] font-medium text-[13px]">
+              {payload.copy.closing_subheading || closingFamily.subheading}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   // HERITAGE 9:16 ILLUSTRATED DECK ("royal-jharokha")
   if (isHeritage) {
     return (
@@ -757,12 +1149,79 @@ export function GuestInvitationViewer({
                   <span className="shrink-0">·</span>
                   <span className="truncate">{payload.guest.guest_name}</span>
                 </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleExportPdf}
+                    disabled={exportingPdf}
+                    className="text-[11px] sm:text-[12px] px-2 py-0.5 rounded border border-[#1f1b16]/15 hover:border-[#1f1b16]/30 inline-flex items-center gap-1 font-medium transition-colors cursor-pointer disabled:opacity-50"
+                    style={{
+                      color: theme.accent,
+                      backgroundColor: theme.bgCard,
+                    }}
+                    title="Export complete invitation as multi-page PDF"
+                  >
+                    {exportingPdf ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <FileDown className="w-3 h-3" strokeWidth={1.5} />
+                    )}
+                    <span>
+                      {exportingPdf && pdfProgress
+                        ? `PDF (${pdfProgress.current}/${pdfProgress.total})`
+                        : "Export PDF"}
+                    </span>
+                  </button>
+                  <span
+                    className="text-[12px] font-mono-tabular shrink-0 ml-1"
+                    style={{ color: theme.textMuted }}
+                  >
+                    {chapterIndex + 1} / {chapters.length}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="shrink-0 flex items-center justify-between px-1">
                 <span
-                  className="text-[12px] font-mono-tabular shrink-0 ml-2"
-                  style={{ color: theme.textMuted }}
+                  className="text-[12px] sm:text-[13px] font-heritage-serif font-medium"
+                  style={{ color: theme.textSecondary }}
                 >
-                  {chapterIndex + 1} / {chapters.length}
+                  {payload.couple.groom} &amp; {payload.couple.bride}
                 </span>
+                <button
+                  type="button"
+                  onClick={handleExportPdf}
+                  disabled={exportingPdf}
+                  className="text-[11px] sm:text-[12px] px-2.5 py-1 rounded-lg border border-[#b92854]/30 hover:border-[#b92854]/60 inline-flex items-center gap-1.5 font-medium transition-colors cursor-pointer disabled:opacity-50"
+                  style={{
+                    color: theme.accent,
+                    backgroundColor: theme.bgCard,
+                  }}
+                  title="Export complete invitation as multi-page PDF"
+                >
+                  {exportingPdf ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <FileDown className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  )}
+                  <span>
+                    {exportingPdf && pdfProgress
+                      ? `Exporting PDF (${pdfProgress.current}/${pdfProgress.total})...`
+                      : "Export PDF"}
+                  </span>
+                </button>
+              </div>
+            )}
+
+            {exportNotice ? (
+              <div
+                className="shrink-0 text-center py-1 px-2 rounded-md text-[11px] sm:text-[12px] font-medium"
+                style={{
+                  backgroundColor: theme.accentSoft,
+                  color: theme.accent,
+                }}
+              >
+                {exportNotice}
               </div>
             ) : null}
 
@@ -782,6 +1241,7 @@ export function GuestInvitationViewer({
                     style={{ containerType: "size" }}
                   >
                     <div
+                      ref={!isOpened ? currentCardRef : undefined}
                       className="relative rounded-2xl overflow-hidden border border-[#1f1b16]/12 shadow-[0_8px_24px_rgba(31,27,22,0.09)] bg-[#e8eef5]"
                       style={{
                         width: "min(100cqw, calc(100cqh * 9 / 16))",
@@ -889,29 +1349,51 @@ export function GuestInvitationViewer({
                             </p>
                           </div>
 
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setIsOpened(true);
-                              if (payload.permitted_events.length > 0) {
-                                goToChapter(1);
-                              } else {
-                                goToChapter(0);
-                              }
-                            }}
-                            className="rounded-lg bg-[#b92854] hover:bg-[#9c2046] text-[#fdfbf7] font-medium inline-flex items-center gap-[1.2cqw] shrink-0 whitespace-nowrap transition-[transform,background-color] duration-150 active:scale-[0.98] cursor-pointer"
-                            style={{
-                              height: "clamp(28px, 8.5cqw, 38px)",
-                              paddingInline: "clamp(10px, 3.2cqw, 14px)",
-                              fontSize: "clamp(10.5px, 3.1cqw, 13.5px)",
-                            }}
-                          >
-                            Open invitation
-                            <ArrowRight
-                              className="w-[3.5cqw] h-[3.5cqw] min-w-[12px] min-h-[12px] max-w-[16px] max-h-[16px]"
-                              strokeWidth={1.5}
-                            />
-                          </button>
+                          <div className="flex items-center gap-[1cqw] shrink-0">
+                            <button
+                              type="button"
+                              onClick={handleDownloadCurrentImage}
+                              disabled={exportingImage}
+                              className={`rounded-lg border border-[#1f1b16]/12 bg-[#f3eee4] hover:bg-[#eae3d5] text-[#1f1b16] font-medium inline-flex items-center gap-[1cqw] shrink-0 whitespace-nowrap transition-[transform,background-color] duration-150 active:scale-[0.98] cursor-pointer disabled:opacity-60 ${EXPORT_HIDE_IMAGE} ${EXPORT_HIDE_PDF}`}
+                              style={{
+                                height: "clamp(28px, 8.5cqw, 38px)",
+                                paddingInline: "clamp(8px, 2.5cqw, 12px)",
+                                fontSize: "clamp(10px, 2.9cqw, 13px)",
+                              }}
+                              title="Download card image"
+                            >
+                              {exportingImage ? (
+                                <Loader2 className="w-[3.5cqw] h-[3.5cqw] min-w-[12px] min-h-[12px] animate-spin" />
+                              ) : (
+                                <Download className="w-[3.5cqw] h-[3.5cqw] min-w-[12px] min-h-[12px]" strokeWidth={1.5} />
+                              )}
+                              <span>Save card</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsOpened(true);
+                                if (payload.permitted_events.length > 0) {
+                                  goToChapter(1);
+                                } else {
+                                  goToChapter(0);
+                                }
+                              }}
+                              className={`rounded-lg bg-[#b92854] hover:bg-[#9c2046] text-[#fdfbf7] font-medium inline-flex items-center gap-[1.2cqw] shrink-0 whitespace-nowrap transition-[transform,background-color] duration-150 active:scale-[0.98] cursor-pointer ${EXPORT_HIDE_IMAGE} ${EXPORT_HIDE_PDF}`}
+                              style={{
+                                height: "clamp(28px, 8.5cqw, 38px)",
+                                paddingInline: "clamp(10px, 3.2cqw, 14px)",
+                                fontSize: "clamp(10.5px, 3.1cqw, 13.5px)",
+                              }}
+                            >
+                              Open invitation
+                              <ArrowRight
+                                className="w-[3.5cqw] h-[3.5cqw] min-w-[12px] min-h-[12px] max-w-[16px] max-h-[16px]"
+                                strokeWidth={1.5}
+                              />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -931,6 +1413,7 @@ export function GuestInvitationViewer({
                     style={{ containerType: "size" }}
                   >
                     <div
+                      ref={isOpened ? currentCardRef : undefined}
                       className="relative rounded-2xl overflow-hidden border border-[#1f1b16]/12 shadow-[0_8px_24px_rgba(31,27,22,0.09)] bg-[#e8eef5]"
                       style={{
                         width: "min(100cqw, calc(100cqh * 9 / 16))",
@@ -1079,6 +1562,24 @@ export function GuestInvitationViewer({
                                         </button>
                                       )
                                     )}
+                                    <button
+                                      type="button"
+                                      onClick={handleDownloadCurrentImage}
+                                      disabled={exportingImage}
+                                      className={`rounded-md bg-[#fdfbf7] hover:bg-[#e8e0d0] border border-[#1f1b16]/12 font-medium text-[#1f1b16] inline-flex items-center gap-1 transition-colors duration-150 cursor-pointer disabled:opacity-60 ${EXPORT_HIDE_IMAGE} ${EXPORT_HIDE_PDF}`}
+                                      style={{
+                                        padding: "0.9cqw 2.4cqw",
+                                        fontSize: "clamp(9px, 2.75cqw, 12px)",
+                                      }}
+                                      title="Download cover card image"
+                                    >
+                                      {exportingImage ? (
+                                        <Loader2 className="w-[3cqw] h-[3cqw] min-w-[10px] min-h-[10px] animate-spin" />
+                                      ) : (
+                                        <Download className="w-[3cqw] h-[3cqw] min-w-[10px] min-h-[10px]" strokeWidth={1.5} />
+                                      )}
+                                      <span>Save card</span>
+                                    </button>
                                   </div>
                                 )}
                               </div>
@@ -1329,7 +1830,7 @@ export function GuestInvitationViewer({
                                           href={mapHref}
                                           target="_blank"
                                           rel="noopener noreferrer"
-                                          className="rounded-lg inline-flex items-center font-medium border whitespace-nowrap transition-[transform,background-color] duration-150 active:scale-[0.98]"
+                                          className={`rounded-lg inline-flex items-center font-medium border whitespace-nowrap transition-[transform,background-color] duration-150 active:scale-[0.98] ${EXPORT_HIDE_IMAGE} ${EXPORT_LOCATION_LINK}`}
                                           style={{
                                             height: "clamp(22px, 6.5cqw, 29px)",
                                             paddingInline:
@@ -1364,7 +1865,7 @@ export function GuestInvitationViewer({
                                           onClick={() =>
                                             downloadIcsFile(ev, payload.couple)
                                           }
-                                          className="rounded-lg inline-flex items-center font-medium border whitespace-nowrap transition-[transform,background-color] duration-150 active:scale-[0.98] cursor-pointer"
+                                          className={`rounded-lg inline-flex items-center font-medium border whitespace-nowrap transition-[transform,background-color] duration-150 active:scale-[0.98] cursor-pointer ${EXPORT_HIDE_IMAGE} ${EXPORT_HIDE_PDF}`}
                                           style={{
                                             height: "clamp(22px, 6.5cqw, 29px)",
                                             paddingInline:
@@ -1388,6 +1889,44 @@ export function GuestInvitationViewer({
                                             strokeWidth={1.5}
                                           />
                                           Add to calendar
+                                        </button>
+
+                                        <button
+                                          type="button"
+                                          onClick={handleDownloadCurrentImage}
+                                          disabled={exportingImage}
+                                          className={`rounded-lg inline-flex items-center font-medium border whitespace-nowrap transition-[transform,background-color] duration-150 active:scale-[0.98] cursor-pointer disabled:opacity-60 ${EXPORT_HIDE_IMAGE} ${EXPORT_HIDE_PDF}`}
+                                          style={{
+                                            height: "clamp(22px, 6.5cqw, 29px)",
+                                            paddingInline:
+                                              "clamp(7px, 2.4cqw, 11px)",
+                                            fontSize:
+                                              "clamp(8.5px, 2.7cqw, 12px)",
+                                            gap: "1.2cqw",
+                                            backgroundColor: scene.isNightSky
+                                              ? "rgba(253, 251, 247, 0.08)"
+                                              : "rgba(253, 251, 247, 0.72)",
+                                            borderColor: scene.isNightSky
+                                              ? "rgba(253, 251, 247, 0.22)"
+                                              : "rgba(31, 27, 22, 0.14)",
+                                            color: scene.isNightSky
+                                              ? "#e6edf7"
+                                              : "#3f382e",
+                                          }}
+                                          title="Download ceremony card as image"
+                                        >
+                                          {exportingImage ? (
+                                            <Loader2
+                                              className="w-[3cqw] h-[3cqw] min-w-[10px] min-h-[10px] max-w-[14px] max-h-[14px] animate-spin"
+                                              strokeWidth={1.5}
+                                            />
+                                          ) : (
+                                            <Download
+                                              className="w-[3cqw] h-[3cqw] min-w-[10px] min-h-[10px] max-w-[14px] max-h-[14px]"
+                                              strokeWidth={1.5}
+                                            />
+                                          )}
+                                          Download card
                                         </button>
                                       </div>
                                     </div>
@@ -1476,6 +2015,27 @@ export function GuestInvitationViewer({
                                     {payload.copy.closing_subheading ||
                                       closingFamily.subheading}
                                   </p>
+
+                                  <button
+                                    type="button"
+                                    onClick={handleDownloadCurrentImage}
+                                    disabled={exportingImage}
+                                    className={`mt-3 rounded-lg inline-flex items-center font-medium border border-[#1f1b16]/14 bg-[#fdfbf7]/90 text-[#1f1b16] whitespace-nowrap transition-[transform,background-color] duration-150 active:scale-[0.98] cursor-pointer disabled:opacity-60 ${EXPORT_HIDE_IMAGE} ${EXPORT_HIDE_PDF}`}
+                                    style={{
+                                      height: "clamp(24px, 7cqw, 32px)",
+                                      paddingInline: "clamp(8px, 2.8cqw, 13px)",
+                                      fontSize: "clamp(9px, 2.8cqw, 12.5px)",
+                                      gap: "1.2cqw",
+                                    }}
+                                    title="Download closing card as image"
+                                  >
+                                    {exportingImage ? (
+                                      <Loader2 className="w-[3cqw] h-[3cqw] min-w-[11px] min-h-[11px] animate-spin" />
+                                    ) : (
+                                      <Download className="w-[3cqw] h-[3cqw] min-w-[11px] min-h-[11px]" strokeWidth={1.5} />
+                                    )}
+                                    <span>Download card</span>
+                                  </button>
                                 </div>
                               </div>
 
@@ -1563,19 +2123,45 @@ export function GuestInvitationViewer({
                         Previous
                       </button>
 
-                      {currentChapter.kind === "rsvp" ? (
+                      <div className="flex items-center gap-1.5 sm:gap-2">
                         <button
                           type="button"
-                          onClick={() => setRsvpDrawerOpen(true)}
-                          className="h-8 sm:h-9 px-3 sm:px-4 rounded-lg inline-flex items-center justify-center text-[12px] sm:text-[13px] font-medium whitespace-nowrap transition-colors duration-150 active:scale-[0.98] cursor-pointer"
+                          onClick={handleExportPdf}
+                          disabled={exportingPdf}
+                          className="h-8 sm:h-9 px-2.5 sm:px-3 rounded-lg border inline-flex items-center gap-1.5 text-[12px] sm:text-[13px] font-medium transition-colors duration-150 cursor-pointer disabled:opacity-60"
                           style={{
-                            backgroundColor: theme.accent,
-                            color: theme.accentText,
+                            backgroundColor: theme.bgCard,
+                            borderColor: theme.accent,
+                            color: theme.accent,
                           }}
+                          title="Export all cards as one multi-page PDF"
                         >
-                          {rsvpSubmitted ? "Update RSVP" : "Confirm RSVP"}
+                          {exportingPdf ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <FileDown className="w-3.5 h-3.5" strokeWidth={1.5} />
+                          )}
+                          <span>
+                            {exportingPdf && pdfProgress
+                              ? `PDF (${pdfProgress.current}/${pdfProgress.total})`
+                              : "Export PDF"}
+                          </span>
                         </button>
-                      ) : null}
+
+                        {currentChapter.kind === "rsvp" ? (
+                          <button
+                            type="button"
+                            onClick={() => setRsvpDrawerOpen(true)}
+                            className="h-8 sm:h-9 px-3 sm:px-4 rounded-lg inline-flex items-center justify-center text-[12px] sm:text-[13px] font-medium whitespace-nowrap transition-colors duration-150 active:scale-[0.98] cursor-pointer"
+                            style={{
+                              backgroundColor: theme.accent,
+                              color: theme.accentText,
+                            }}
+                          >
+                            {rsvpSubmitted ? "Update RSVP" : "Confirm RSVP"}
+                          </button>
+                        ) : null}
+                      </div>
 
                       <button
                         type="button"
@@ -1598,6 +2184,7 @@ export function GuestInvitationViewer({
             </AnimatePresence>
           </div>
         </main>
+        {renderPdfExportDeck()}
       </div>
     );
   }
@@ -2051,7 +2638,7 @@ export function GuestInvitationViewer({
                                     payload.couple
                                   )
                                 }
-                                className="h-9 px-4 rounded-lg inline-flex items-center gap-2 text-[13px] font-medium border transition-[transform,color,background-color,border-color] duration-150 active:scale-[0.98] cursor-pointer"
+                                className={`h-9 px-4 rounded-lg inline-flex items-center gap-2 text-[13px] font-medium border transition-[transform,color,background-color,border-color] duration-150 active:scale-[0.98] cursor-pointer ${EXPORT_HIDE_IMAGE} ${EXPORT_HIDE_PDF}`}
                                 style={{
                                   backgroundColor: theme.bgRaised,
                                   borderColor: theme.hairline,
@@ -2069,7 +2656,7 @@ export function GuestInvitationViewer({
                                 href={getEventMapHref(currentChapter.event)}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="h-9 px-4 rounded-lg inline-flex items-center gap-2 text-[13px] font-medium border transition-[transform,color,background-color,border-color] duration-150 active:scale-[0.98]"
+                                className={`h-9 px-4 rounded-lg inline-flex items-center gap-2 text-[13px] font-medium border transition-[transform,color,background-color,border-color] duration-150 active:scale-[0.98] ${EXPORT_HIDE_IMAGE} ${EXPORT_LOCATION_LINK}`}
                                 style={{
                                   backgroundColor: "transparent",
                                   borderColor: theme.hairline,
@@ -2082,6 +2669,24 @@ export function GuestInvitationViewer({
                                   strokeWidth={1.5}
                                 />
                               </a>
+                              <button
+                                type="button"
+                                onClick={handleDownloadCurrentImage}
+                                disabled={exportingImage}
+                                className={`h-9 px-4 rounded-lg inline-flex items-center gap-2 text-[13px] font-medium border transition-[transform,color,background-color,border-color] duration-150 active:scale-[0.98] cursor-pointer disabled:opacity-60 ${EXPORT_HIDE_IMAGE} ${EXPORT_HIDE_PDF}`}
+                                style={{
+                                  backgroundColor: theme.bgRaised,
+                                  borderColor: theme.hairline,
+                                  color: theme.textPrimary,
+                                }}
+                              >
+                                {exportingImage ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <Download className="w-4 h-4" strokeWidth={1.5} />
+                                )}
+                                Download card
+                              </button>
                             </div>
                           </div>
                         ) : (
@@ -2136,6 +2741,29 @@ export function GuestInvitationViewer({
 
                     <button
                       type="button"
+                      onClick={handleExportPdf}
+                      disabled={exportingPdf}
+                      className="h-9 px-3.5 rounded-lg border inline-flex items-center gap-1.5 text-[13px] font-medium transition-colors duration-150 cursor-pointer disabled:opacity-60"
+                      style={{
+                        backgroundColor: theme.bgCard,
+                        borderColor: theme.accent,
+                        color: theme.accent,
+                      }}
+                    >
+                      {exportingPdf ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <FileDown className="w-3.5 h-3.5" strokeWidth={1.5} />
+                      )}
+                      <span>
+                        {exportingPdf && pdfProgress
+                          ? `PDF (${pdfProgress.current}/${pdfProgress.total})`
+                          : "Export PDF"}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
                       onClick={() => goToChapter(chapterIndex + 1)}
                       disabled={chapterIndex === chapters.length - 1}
                       className="h-9 px-3.5 rounded-lg border inline-flex items-center gap-1.5 text-[13px] disabled:opacity-40 transition-colors duration-150 cursor-pointer disabled:cursor-default"
@@ -2155,6 +2783,7 @@ export function GuestInvitationViewer({
           </AnimatePresence>
         </div>
       </main>
+      {renderPdfExportDeck()}
     </div>
   );
 }
